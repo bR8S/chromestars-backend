@@ -1,26 +1,52 @@
-import { run } from './test.js'
 import express, { json } from 'express'
 import mongoose from 'mongoose'
 import dotenv from 'dotenv'
 
-const db = {
-    todos: []
-}
+import User from './models/User.js'
+
+import userRoutes from './routes/user.js'
+import raceRoutes from './routes/race.js'
+import eventRoutes from './routes/event.js'
+import trackRoutes from './routes/track.js'
+import indexRoutes from './routes/index.js'
+
+dotenv.config()
 
 const app = express()
 app.use(express.json())
+const router = express.Router()
 
-app.get('/todo', (req, res) => {
-    res.json({ data: db.todos })
-})
+// mount the routes we set up
+app.use('/', indexRoutes)
+app.use('/users', userRoutes)
+app.use('/race', raceRoutes)
+app.use('/event', eventRoutes)
+app.use('/track', trackRoutes)
 
-app.post('/todo', (req, res) => {
-    const text = req.body.text
-    const newTodo = { id: Date.now(), text: text }
-    db.todos.push(newTodo)
-    res.json({ data: newTodo })
-})
 
-app.listen(3000, () => {
-    console.log('Server running on http://localhost:3000')
-})  
+const mongoURI = process.env.MONGODB_URI
+
+const startServer = async () => {
+    try {
+        await mongoose.connect(mongoURI, {
+            useNewUrlParser: true,
+            useUnifiedTopology: true
+        })
+        console.log('Successfully connected to db.')
+        app.listen(3000, () => {
+            console.log('Server running on http://localhost:3000')
+        })  
+
+    } catch (error) {
+        console.log(error, 'Error connecting to db.')
+        process.exit(1)
+    }
+}
+
+startServer()
+
+app.get('/all-racers', async (req, res) => {
+    const allRacers = await User.find({})
+    console.log(allRacers)
+    res.send(JSON.stringify(allRacers))
+}) 
