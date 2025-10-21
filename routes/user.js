@@ -3,206 +3,252 @@ const router = express.Router()
 import User from '../models/User.js'
 
 router.get('', async (req, res) => {
-    if(req.session.user){
+    try {
+        if(!req.session.user){
+            return res.status(401).json({ message: 'Please sign in' })
+        }
+
         const username = req.session.user.username
         const users = await User.find({})
         const user = users.find( user => user.username === username )
 
-        res.render('../views/user/user.ejs', { id: user.id, profile_image: user.profile_image, background_image: user.background_image, username: user.username, phone_number: user.phone_number, first_name: user.first_name, last_name: user.last_name, email: user.email, bio: user.bio, password: user.password })
+        res.json({
+            id: user.id,
+            profile_image: user.profile_image, 
+            background_image: user.background_image, 
+            username: user.username, 
+            phone_number: user.phone_number, 
+            first_name: user.first_name, 
+            last_name: user.last_name, 
+            email: user.email, 
+            bio: user.bio, 
+            password: user.password
+        })
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({ message: 'Internal server error' })
     }
-    else {
-        res.redirect('/login')
-    }
-})
-
-// New Racer Route
-router.get('/new', async (req, res) => {
-    res.render('racer/new', { racer: new User() })
 })
 
 // Check if user is logged in
 router.get('/logged-in', async (req, res) => {
-    let userAuth = false
+    try {
+        let userAuth = false
 
-    if(req.session.user){
+        if(!req.session.user) {
+            return res.status(401).json({ userAuth: userAuth, message: 'Please sign in' })
+        }
+
         const username = req.session.user.username
         const users = await User.find({})
         const user = users.find( user => user.username === username )
-        userAuth = true
-        if(user){
-            res.send(userAuth)
+
+        if(!user) {
+            userAuth = true
+            return res.status(403).json({ userAuth: userAuth, message: 'Unauthorized user' })
         }
-    }
-    else {
-        res.send(userAuth)
+
+        res.json({ userAuth: userAuth })
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json({ message: 'Internal server error' })
     }
 })
 
 // Check if user has correct perms
 router.get('/admin-perms', async (req, res) => {
-    let userAdmin = false
+    try {
+        let userAdmin = false
 
-    if(req.session.user){
+        if(!req.session.user) {
+            return res.status(401).json({ userAdmin: userAdmin, message: 'Please sign in' })
+        }
+
         const username = req.session.user.username
         const users = await User.find({})
         const user = users.find( user => user.username === username )
-        userAdmin = true
-        if(user){
-            res.send(userAdmin)
+
+        if(!user) {
+            userAdmin = true
+            return res.status(403).json({ userAdmin: userAdmin, message: 'Unauthorized user' })
         }
-    }
-    else {
-        res.send(userAdmin)
+
+        res.json({ userAdmin: userAdmin })
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json({ message: 'Internal server error' })
     }
 })
 
 router.post('/update-account', async (req, res) => { 
-    const id = req.body.id
-    const user = await User.findById(id)
+    try {
+        const { id, ...updates } = req.body
+        const user = await User.findById(id)
 
-    if(user.username !== req.body.username){
-        user.username = req.body.username
-    }
-    if(user.first_name !== req.body.first_name){
-        user.first_name = req.body.first_name
-    }
-    if(user.last_name !== req.body.last_name){
-        user.last_name = req.body.last_name
-    }
-    if(user.email !== req.body.email){
-        user.email = req.body.email
-    }
-    if(user.bio !== req.body.bio){
-        user.bio = req.body.bio
-    }
-    if(user.background_image !== req.body.background_image && req.body.background_image){
-        user.background_image = req.body.background_image
-    }
-    if(user.profile_image !== req.body.profile_image && req.body.profile_image){
-        user.profile_image = req.body.profile_image
-    }
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' })
+        }
 
-    await user.save()
+        const allowedFields = [
+            'username',
+            'first_name',
+            'last_name',
+            'email',
+            'bio',
+            'background_image',
+            'profile_image'
+        ]
 
-    res.send('')
+        for (const field of allowedFields) {
+            if (updates[field] && user[field] !== updates[field]) {
+                user[field] = updates[field];
+            }
+        }
+
+        await user.save()
+        return res.status(200).json({ message: 'User updated successfully' })
+
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json({ message: 'Internal server error' })
+    }
 })
 
 // Fetch All Racers
 router.get('/all-racers', async (req, res) => {
-    const allRacers = await User.find({})
-    res.send(JSON.stringify(allRacers))
+    try {
+        const racers = await User.find({})
+        res.json({ racers: racers })
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json({ message: 'Internal server error' })
+    }
 }) 
 
 // Fetch Racers Given IDs
 router.get('/get-racers', async (req, res) => {
-    let idArray = req.query.ids.split(',')
-    const allRacers = await User.find({})
-    const matchingRacers = allRacers.filter(racer => idArray.includes(racer.id))
-    res.send(JSON.stringify(matchingRacers))
+    try {
+        let idArray = req.query.ids.split(',')
+        const racers = await User.find({})
+        const matchingRacers = racers.filter(racer => idArray.includes(racer.id))
+        res.json({ racers: matchingRacers })
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json({ message: 'Internal server error' })
+    }
 }) 
 
 // Fetch Racer Given ID
 router.get('/:id', async (req, res) => {
-    const racer = await User.find({ _id: req.params.id })
-    res.send(JSON.stringify(racer))
+    try {
+        const racer = await User.find({ _id: req.params.id })
+        res.json({ racer: racer })
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json({ message: 'Internal server error' })
+    }
 })
 
 // Update Racer Score Given ID
 router.post('/update-score', async (req, res) => {
-
-    const id = req.body.id
-    const points = req.body.points
-    
     try {
+        const { id, points } = req.body
         const racer = await User.findById({ _id: id })
+
         racer.score = racer.score + points
         await racer.save()
-    } catch (e) {
-        console.log(e)
-    }
 
-    res.send('')
+        res.status(200).json({ message: 'Updated score successfully'})
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json({ message: 'Internal server error' })
+    }
 })
 
 // Update Racer ELO Given ID
 router.post('/update-elo', async (req, res) => {
-    const id = req.body.id
-    const elo = req.body.elo
-
     try {
+        const { id, elo } = req.body
         const racer = await User.findById({ _id: id })
+
         racer.elo = elo
         await racer.save()
-    } catch (e) {
-        console.log(e)
-    }
 
-    res.send('')
+        res.status(200).json({ message: 'Updated elo successfully'})
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json({ message: 'Internal server error' })
+    }
 })
 
 // Update Racer Wins Given ID
 router.post('/update-win', async (req, res) => {
-    const id = req.body.id
-    
     try {
+        const { id } = req.body
         const racer = await User.findById({ _id: id })
+
         racer.wins += 1
         await racer.save()
-    } catch (e) {
-        console.log(e)
+
+        res.status(200).json({ message: 'Updated wins successfully'})
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json({ message: 'Internal server error' })
     }
-    res.send('')
 })
 
 // Update Racer Losses Given ID
 router.post('/update-loss', async (req, res) => {
-    const id = req.body.id
-    
     try {
+        const { id } = req.body
         const racer = await User.findById({ _id: id })
+    
         racer.losses += 1
         await racer.save()
-    } catch (e) {
-        console.log(e)
+
+        res.status(200).json({ message: 'Updated losses successfully'})
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json({ message: 'Internal server error' })
     }
-    res.send('')
 })
 
 // Update Racer Competitions Given ID
 router.post('/update-competitions', async (req, res) => {
-    const id = req.body.id
-    
     try {
+        const { id } = req.body
         const racer = await User.findById({ _id: id })
+    
         racer.competitions += 1
         await racer.save()
-    } catch (e) {
-        console.log(e)
+
+        res.status(200).json({ message: 'Updated competitions successfully'})
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json({ message: 'Internal server error' })
     }
-    res.send('')
 })
 
 // Update Racers Avg Pos Given ID 
 router.post('/update-avg-pos', async (req, res) => {
-    const id = req.body.id
-    const placement = req.body.placement + 1
-    
     try {
+        const { id, placement } = req.body
         const racer = await User.findById({ _id: id })
-        racer.placements.push(placement)
-        await racer.save()
-    } catch (e) {
-        console.log(e)
-    }
 
-    res.send('')
+        racer.placements.push(placement + 1)
+        await racer.save()
+        
+        res.status(200).json({ message: 'Updated placements successfully'})
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json({ message: 'Internal server error' })
+    }
 })
 
 // Update Racers Best Streak Given ID
 router.post('/update-streak', async (req, res) => {
-    const id = req.body.id
-    
     try {
+        const { id } = req.body
         const racer = await User.findById({ _id: id })
         const requiredPlacement = 4
         let currStreak = 0
@@ -227,17 +273,18 @@ router.post('/update-streak', async (req, res) => {
 
         racer.streak = highestStreak
         await racer.save()
-    } catch (e) {
-        console.log(e)
+        
+        res.status(200).json({ message: 'Updated streak successfully'})
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json({ message: 'Internal server error' })
     }
-    res.send('')
 })
 
 // Update Racer Number of Podium Finishes
 router.post('/update-podium-count', async (req, res) => {
-    const id = req.body.id
-    
     try {
+        const { id } = req.body
         const racer = await User.findById({ _id: id })
         const requiredPlacement = 4
 
@@ -252,20 +299,18 @@ router.post('/update-podium-count', async (req, res) => {
 
         racer.podium_count = podiumCount
         await racer.save()
-    } catch (e) {
-        console.log(e)
+        
+        res.status(200).json({ message: 'Updated podium count successfully'})
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json({ message: 'Internal server error' })
     }
-
-    res.send('')
 })
 
 //Update Racer Rivals 
 router.post('/update-rivals', async (req, res) => {
-    const id = req.body.id
-    const standing = req.body.standing // Racer standing
-    const standings = req.body.standings
-
-    try{
+    try {
+        const { id, standing, standings } = req.body
         const racer = await User.findById({ _id: id })
         let placementSum = 0
 
@@ -307,44 +352,48 @@ router.post('/update-rivals', async (req, res) => {
             }
         }
         await racer.save()
-    } catch(e) {
-        console.log(e)
+        
+        res.status(200).json({ message: 'Updated rivals successfully'})
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json({ message: 'Internal server error' })
     }
-    res.send('')
 })
 
 //Update Racer Tracks
 router.post('/update-tracks', async (req, res) => {
-    const id = req.body.id
-    const track = req.body.track
-    const standing = req.body.standing
+    try {
+        const { id, track, standing } = req.body
 
-    try{
-        if(standing <= 3) {
-            const racer = await User.findById({ _id: id })
-            racer.tracks.push(track)
-
-            //await racer.save()
-
-            const trackCount = new Map()
-
-            racer.tracks.forEach(track => {
-                trackCount.set(track, (trackCount.get(track) || 0) + 1)
-            })
-
-            // Step 2: Sort by frequency in descending order
-            const sortedTracks = Array.from(trackCount.entries()).sort((a, b) => b[1] - a[1]);
-
-            // Step 3: Extract the top N words
-            const topTracks = sortedTracks.slice(0, 3).map(([track, count]) => ({ track, count }))
-            racer.top_tracks = topTracks
-
-            await racer.save()
+        if(standing > 3){
+            return res.status(200).json({ message: 'Racer placed out of top 3, no top tracks to be updated'})
         }
-    } catch(e) {
-        console.log(e)
+
+        const racer = await User.findById({ _id: id })
+        racer.tracks.push(track)
+
+        //await racer.save()
+
+        const trackCount = new Map()
+
+        racer.tracks.forEach(track => {
+            trackCount.set(track, (trackCount.get(track) || 0) + 1)
+        })
+
+        // Step 2: Sort by frequency in descending order
+        const sortedTracks = Array.from(trackCount.entries()).sort((a, b) => b[1] - a[1]);
+
+        // Step 3: Extract the top N words
+        const topTracks = sortedTracks.slice(0, 3).map(([track, count]) => ({ track, count }))
+        racer.top_tracks = topTracks
+
+        await racer.save()
+        
+        res.status(200).json({ message: 'Updated top tracks successfully'})
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json({ message: 'Internal server error' })
     }
-    res.send('')
 })
 
 // Reset all racers 
@@ -366,8 +415,10 @@ router.post('/reset-racers', async (req, res) => {
             racer.top_tracks = [];
             await racer.save()
         })
-    } catch(e){
-        console.log(e)
+        res.status(200).json({ message: 'Racers reset successfully'})
+    } catch(error){
+        console.log(error)
+        return res.status(500).json({ message: 'Internal server error' })
     }
 })
 
@@ -375,10 +426,10 @@ router.post('/reset-racers', async (req, res) => {
 router.post('/delete-racers', async (req, res) => {
     try{
         await User.deleteMany({})
-        res.send('All racers deleted successfully') // Send response after deletion
-    } catch (e) {
-        console.error(e);
-        res.status(500).send('Error deleting racers')
+        res.status(200).json({ message: 'Racers deleted successfully'})
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Internal server error' })
     }
 })
 

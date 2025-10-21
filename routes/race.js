@@ -8,12 +8,16 @@ import Event from '../models/Event.js'
 // All Races Route
 router.get('/', async (req, res) => {
     try {
-        if(!req.session.user) return res.status(401).json({ message: 'Please sign in' })
+        if(!req.session.user) {
+            return res.status(401).json({ message: 'Please sign in' })
+        }
 
         const id = req.session.user.id
         const user = await User.findById(id)
 
-        if(!user.admin) return res.status(403).json({ message: 'Unauthorized: Admins only' })
+        if(!user.admin) {
+            return res.status(403).json({ message: 'Unauthorized: Admins only' })
+        }
 
         const race = await Race.find({}).populate('event', 'name')
         const racers = await User.find({})
@@ -21,6 +25,7 @@ router.get('/', async (req, res) => {
         res.json({ race: race, racers: racers })
 
     } catch (error) {
+        console.log(error)
         res.status(500).json({ message: 'Internal server error' })
     }
 })
@@ -28,83 +33,82 @@ router.get('/', async (req, res) => {
 // New Race Route
 router.get('/new', async (req, res) => {
     try {
-        if(req.session.user){
-            const id = req.session.user.id
-            const user = await User.findById(id)
-
-            if(user.admin){
-                const racers = await User.find({})
-                const tracks = await Track.find({})
-                const events = await Event.find({})
-                res.render('race/new', { race: new Race(), racers: racers, tracks: tracks, events: events })
-            } else {
-                res.redirect('/')
-            }
-        } else {
-            res.redirect('/')
+        if(!req.session.user) {
+            return res.status(401).json({ message: 'Please sign in' })
         }
+
+        const id = req.session.user.id
+        const user = await User.findById(id)
+
+        if(!user.admin) {
+            return res.status(403).json({ message: 'Unauthorized: Admins only' })
+        }
+
+        const racers = await User.find({})
+        const tracks = await Track.find({})
+        const events = await Event.find({})
+
+        res.json({ race: new Race(), racers: racers, tracks: tracks, events: events })
+        
     } catch (error) {
-        console.error(err)
+        console.log(error)
         res.status(500).json({ message: 'Server error' })
     }
 })
 
 // Create Race Route
 router.post('/', async (req, res) => {
-    let participants = req.body.participants
-
-    if (typeof participants === 'string') {
-        participants = participants.split(',').map(id => id.trim()); // Trim spaces
-    }
-
-    const racers = await User.find({ _id: { $in: participants } })
-    
-    const sortedRacers = participants.map(id => 
-        racers.find(racer => racer._id.toString() === id.toString())
-    ).filter(Boolean) // Remove undefined values
-
-    if (req.body.event === ''){
-        req.body.event = null
-    }
-
-    const event = await Event.findById(req.body.event)
-
-    const race = new Race({
-        name: req.body.title,
-        time: req.body.time,
-        track: req.body.track,
-        participants: sortedRacers,
-        event: event || null
-    })
-    
-    // participants are in order of placements so we can update racer scores accordingly here
     try {
+        let participants = req.body.participants
+
+        if (typeof participants === 'string') {
+            participants = participants.split(',').map(id => id.trim()); // Trim spaces
+        }
+
+        const racers = await User.find({ _id: { $in: participants } })
+        
+        const sortedRacers = participants.map(id => 
+            racers.find(racer => racer._id.toString() === id.toString())
+        ).filter(Boolean) // Remove undefined values
+
+        if (req.body.event === ''){
+            req.body.event = null
+        }
+
+        const event = await Event.findById(req.body.event)
+
+        const race = new Race({
+            name: req.body.title,
+            time: req.body.time,
+            track: req.body.track,
+            participants: sortedRacers,
+            event: event || null
+        })
+        
+        // participants are in order of placements so we can update racer scores accordingly here
         await race.save()
-        res.send('')
+        
+        return res.status(201).json({
+            message: 'Race created successfully',
+            race,
+        })
+    
     } catch (error){
         console.log(error)
-        res.render('race/new', {
-            race: race,
-            errorMessage: 'Error creating the race'
-        })
+        return res.status(500).json({ message: 'Error creating race' })
     }
 })
 
-// All Races Route
-router.get('/races', async (req, res) => {
-    res.render('race/races')
-})
-
-// Fetch All Races 
-router.get('/api/all-races', async (req, res) => {
-    const race = await Race.find({})
-    res.send(JSON.stringify(race))
-})
 
 // All Races Route
 router.post('/api/delete-race', async (req, res) => {
-    const deleteRace = await Race.deleteOne({ _id: req.body.id })
-    res.send('')
+    try {
+        await Race.deleteOne({ _id: req.body.id })
+        return res.status(201).json({ message: 'Race deleted successfully' })
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json({ message: 'Error deleting race'})
+    }
 })
 
 export default router;
