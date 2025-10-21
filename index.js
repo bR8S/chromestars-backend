@@ -9,12 +9,12 @@ import raceRoutes from './routes/race.js'
 import eventRoutes from './routes/event.js'
 import trackRoutes from './routes/track.js'
 import indexRoutes from './routes/index.js'
+import racerRoutes from './routes/racer.js'
 
 dotenv.config()
 
 const app = express()
 app.use(express.json())
-const router = express.Router()
 
 // mount the routes we set up
 app.use('/', indexRoutes)
@@ -22,6 +22,7 @@ app.use('/users', userRoutes)
 app.use('/race', raceRoutes)
 app.use('/event', eventRoutes)
 app.use('/track', trackRoutes)
+app.use('/racer', racerRoutes)
 
 
 const mongoURI = process.env.MONGODB_URI
@@ -32,10 +33,10 @@ const startServer = async () => {
             useNewUrlParser: true,
             useUnifiedTopology: true
         })
-        console.log('Successfully connected to db.')
         app.listen(3000, () => {
             console.log('Server running on http://localhost:3000')
         })  
+        console.log('Successfully connected to db.')
 
     } catch (error) {
         console.log(error, 'Error connecting to db.')

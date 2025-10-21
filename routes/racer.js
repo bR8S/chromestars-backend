@@ -8,7 +8,7 @@ router.get('/:username', async (req, res) => {
         const username = req.params.username
         const racer = await User.findOne({ username: username })
 
-        res.render('racer/index', {
+        res.json({
             username: racer.username, 
             profile_image: racer.profile_image, 
             background_image: racer.background_image, 

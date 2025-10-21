@@ -15,15 +15,16 @@ router.get('/', async (req, res) => {
             if(user.admin){
                 const race = await Race.find({}).populate('event', 'name')
                 const racers = await User.find({})
-                res.render('race/index', { race: race, racers: racers })
+                res.json({ race: race, racers: racers })
             } else {
                 res.redirect('/')
             }
         } else {
             res.redirect('/')
         }
-    } catch {
-        res.redirect('/')
+    } catch (error) {
+        console.error(err)
+        res.status(500).json({ message: 'Server error' })
     }
 })
 
@@ -45,8 +46,9 @@ router.get('/new', async (req, res) => {
         } else {
             res.redirect('/')
         }
-    } catch {
-        res.redirect('/')
+    } catch (error) {
+        console.error(err)
+        res.status(500).json({ message: 'Server error' })
     }
 })
 
