@@ -24,7 +24,7 @@ router.get('/:username', async (req, res) => {
             top_tracks: racer.top_tracks
         })
     } catch {
-        res.redirect('/')
+        res.status(500).json({ message: 'Internal server error' })
     }
 })
 

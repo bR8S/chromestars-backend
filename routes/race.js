@@ -8,23 +8,20 @@ import Event from '../models/Event.js'
 // All Races Route
 router.get('/', async (req, res) => {
     try {
-        if(req.session.user){
-            const id = req.session.user.id
-            const user = await User.findById(id)
+        if(!req.session.user) return res.status(401).json({ message: 'Please sign in' })
 
-            if(user.admin){
-                const race = await Race.find({}).populate('event', 'name')
-                const racers = await User.find({})
-                res.json({ race: race, racers: racers })
-            } else {
-                res.redirect('/')
-            }
-        } else {
-            res.redirect('/')
-        }
+        const id = req.session.user.id
+        const user = await User.findById(id)
+
+        if(!user.admin) return res.status(403).json({ message: 'Unauthorized: Admins only' })
+
+        const race = await Race.find({}).populate('event', 'name')
+        const racers = await User.find({})
+
+        res.json({ race: race, racers: racers })
+
     } catch (error) {
-        console.error(err)
-        res.status(500).json({ message: 'Server error' })
+        res.status(500).json({ message: 'Internal server error' })
     }
 })
 
