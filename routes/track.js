@@ -6,71 +6,62 @@ import User from '../models/User.js'
 // All Races Route
 router.get('/', async (req, res) => {
     try {
-        if(req.session.user){
-            const id = req.session.user.id
-            const user = await User.findById(id)
-
-            if(user.admin){
-                const tracks = await Track.find({})
-                res.render('track/index', { tracks: tracks })
-            } else {
-                res.redirect('/')
-            }
-        } else {
-            res.redirect('/')
+        if(!req.session.user) {
+            return res.status(401).json({ message: 'Please sign in' })
         }
-    } catch {
-        res.redirect('/')
-    }
-})
 
-// New Race Route
-router.get('/new', async (req, res) => {
-    try {
-        if(req.session.user){
-            const id = req.session.user.id
-            const user = await User.findById(id)
-    
-            if(user.admin){
-                res.render('track/new', { track: new Track() })
-            } else {
-                res.redirect('/')
-            }
-        } else {
-            res.redirect('/')
+        const id = req.session.user.id
+        const user = await User.findById(id)
+
+        if(!user.admin){
+            return res.status(403).json({ message: 'Unauthorized: Admins only' })
         }
-    } catch {
-        res.redirect('/')
+        
+        const tracks = await Track.find({})
+        res.json({ tracks: tracks })
+        
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({ message: 'Error fetching tracks' })
     }
 })
 
 // Create Race Route
 router.post('/', async (req, res) => {
-    const track = new Track({
-        name: req.body.title,
-        laps: req.body.laps
-    })
     try {
-        const newTrack = await track.save()
-        res.send('')
-    } catch {
-        res.render('track/new', {
-            track: track,
-            errorMessage: 'Error creating the track.'
+        const { title, laps } = req.body
+        const track = new Track({
+            name: title,
+            laps: laps
         })
+        await track.save()
+        res.json({ message: 'Track created successfully'})
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({ message: 'Error creating track' })
     }
 })
 
 // Fetch All Races 
 router.get('/all-tracks', async (req, res) => {
-    const track = await Track.find({})
-    res.send(JSON.stringify(track))
+    try {
+        const tracks = await Track.find({})
+        res.json({ tracks: tracks })
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({ message: 'Error fetching tracks' })
+    }
 })
 
 // All Races Route
 router.post('/delete-track', async (req, res) => {
-    const deleteTrack = await Track.deleteOne({ _id: req.body.id })
-    res.send('')
+    try {
+        const { id } = req.body
+        await Track.deleteOne({ _id: id })
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({ message: 'Error deleting track' })
+    }
 })
 
 export default router;

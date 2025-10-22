@@ -3,8 +3,13 @@ const router = express.Router()
 import Users from '../models/User.js'
 
 router.get('/', async (req, res) => {
-    const users = await Users.find({})
-    res.json({users: users})
+    try {
+        const users = await Users.find({})
+        res.json({users: users})
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({ message: 'Internal server error'})
+    }
 })
 
 export default router;

@@ -26,7 +26,7 @@ router.get('/', async (req, res) => {
 
     } catch (error) {
         console.log(error)
-        res.status(500).json({ message: 'Internal server error' })
+        res.status(500).json({ message: 'Error fetching all races' })
     }
 })
 
@@ -52,7 +52,7 @@ router.get('/new', async (req, res) => {
         
     } catch (error) {
         console.log(error)
-        res.status(500).json({ message: 'Server error' })
+        res.status(500).json({ message: 'Error creating new race' })
     }
 })
 

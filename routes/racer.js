@@ -5,7 +5,7 @@ import User from '../models/User.js'
 // Given Racers Route
 router.get('/:username', async (req, res) => {
     try {
-        const username = req.params.username
+        const { username } = req.params
         const racer = await User.findOne({ username: username })
 
         res.json({
@@ -24,7 +24,7 @@ router.get('/:username', async (req, res) => {
             top_tracks: racer.top_tracks
         })
     } catch {
-        res.status(500).json({ message: 'Internal server error' })
+        res.status(500).json({ message: 'Error fetching racer' })
     }
 })
 
