@@ -33,8 +33,8 @@ const startServer = async () => {
             useNewUrlParser: true,
             useUnifiedTopology: true
         })
-        app.listen(3000, () => {
-            console.log('Server running on http://localhost:3000')
+        app.listen(5000, () => {
+            console.log('Server running on http://localhost:5000')
         })  
         console.log('Successfully connected to db.')
 
@@ -45,9 +45,3 @@ const startServer = async () => {
 }
 
 startServer()
-
-app.get('/all-racers', async (req, res) => {
-    const allRacers = await User.find({})
-    console.log(allRacers)
-    res.send(JSON.stringify(allRacers))
-}) 

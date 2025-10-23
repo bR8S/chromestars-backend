@@ -114,52 +114,52 @@ router.post('/update-account', async (req, res) => {
     }
 })
 
-// Fetch All Racers
-router.get('/all-racers', async (req, res) => {
+// Fetch All users
+router.get('/all-users', async (req, res) => {
     try {
-        const racers = await User.find({})
-        res.json({ racers: racers })
+        const users = await User.find({})
+        res.json({ users: users })
     } catch (error) {
         console.log(error)
-        return res.status(500).json({ message: 'Error fetching racers' })
+        return res.status(500).json({ message: 'Error fetching users' })
     }
 }) 
 
-// Fetch Racers Given IDs
-router.get('/get-racers', async (req, res) => {
+// Fetch users Given IDs
+router.get('/get-users', async (req, res) => {
     try {
         const { ids } = req.query
         const idArray = ids.split(',')
         //const idArray = ids.split(',').map(id => id.trim()).filter(id => mongoose.Types.ObjectId.isValid(id))
-        const racers = await User.find({ _id: { $in: idArray } })
+        const users = await User.find({ _id: { $in: idArray } })
 
-        res.json({ racers: racers })
+        res.json({ users: users })
     } catch (error) {
         console.log(error)
-        return res.status(500).json({ message: 'Error fetching racers' })
+        return res.status(500).json({ message: 'Error fetching users' })
     }
 }) 
 
-// Fetch Racer Given ID
+// Fetch user Given ID
 router.get('/:id', async (req, res) => {
     try {
         const { id } = req.params;
-        const racer = await User.findById(id)
-        res.json({ racer: racer })
+        const user = await User.findById(id)
+        res.json({ user: user })
     } catch (error) {
         console.log(error)
-        return res.status(500).json({ message: 'Error fetching racer' })
+        return res.status(500).json({ message: 'Error fetching user' })
     }
 })
 
-// Update Racer Score Given ID
+// Update user Score Given ID
 router.post('/update-score', async (req, res) => {
     try {
         const { id, points } = req.body
-        const racer = await User.findById(id)
+        const user = await User.findById(id)
 
-        racer.score = racer.score + points
-        await racer.save()
+        user.score = user.score + points
+        await user.save()
 
         res.status(200).json({ message: 'Updated score successfully'})
     } catch (error) {
@@ -168,14 +168,14 @@ router.post('/update-score', async (req, res) => {
     }
 })
 
-// Update Racer ELO Given ID
+// Update user ELO Given ID
 router.post('/update-elo', async (req, res) => {
     try {
         const { id, elo } = req.body
-        const racer = await User.findById(id)
+        const user = await User.findById(id)
 
-        racer.elo = elo
-        await racer.save()
+        user.elo = elo
+        await user.save()
 
         res.status(200).json({ message: 'Updated elo successfully'})
     } catch (error) {
@@ -184,14 +184,14 @@ router.post('/update-elo', async (req, res) => {
     }
 })
 
-// Update Racer Wins Given ID
+// Update user Wins Given ID
 router.post('/update-win', async (req, res) => {
     try {
         const { id } = req.body
-        const racer = await User.findById(id)
+        const user = await User.findById(id)
 
-        racer.wins += 1
-        await racer.save()
+        user.wins += 1
+        await user.save()
 
         res.status(200).json({ message: 'Updated wins successfully'})
     } catch (error) {
@@ -200,14 +200,14 @@ router.post('/update-win', async (req, res) => {
     }
 })
 
-// Update Racer Losses Given ID
+// Update user Losses Given ID
 router.post('/update-loss', async (req, res) => {
     try {
         const { id } = req.body
-        const racer = await User.findById(id)
+        const user = await User.findById(id)
     
-        racer.losses += 1
-        await racer.save()
+        user.losses += 1
+        await user.save()
 
         res.status(200).json({ message: 'Updated losses successfully'})
     } catch (error) {
@@ -216,14 +216,14 @@ router.post('/update-loss', async (req, res) => {
     }
 })
 
-// Update Racer Competitions Given ID
+// Update user Competitions Given ID
 router.post('/update-competitions', async (req, res) => {
     try {
         const { id } = req.body
-        const racer = await User.findById(id)
+        const user = await User.findById(id)
     
-        racer.competitions += 1
-        await racer.save()
+        user.competitions += 1
+        await user.save()
 
         res.status(200).json({ message: 'Updated competitions successfully'})
     } catch (error) {
@@ -232,14 +232,14 @@ router.post('/update-competitions', async (req, res) => {
     }
 })
 
-// Update Racers Avg Pos Given ID 
+// Update users Avg Pos Given ID 
 router.post('/update-avg-pos', async (req, res) => {
     try {
         const { id, placement } = req.body
-        const racer = await User.findById(id)
+        const user = await User.findById(id)
 
-        racer.placements.push(placement + 1)
-        await racer.save()
+        user.placements.push(placement + 1)
+        await user.save()
         
         res.status(200).json({ message: 'Updated placements successfully'})
     } catch (error) {
@@ -248,18 +248,18 @@ router.post('/update-avg-pos', async (req, res) => {
     }
 })
 
-// Update Racers Best Streak Given ID
+// Update users Best Streak Given ID
 router.post('/update-streak', async (req, res) => {
     try {
         const { id } = req.body
-        const racer = await User.findById(id)
+        const user = await User.findById(id)
         const requiredPlacement = 4
         let currStreak = 0
         let highestStreak = 0
-        let end = racer.placements.length
+        let end = user.placements.length
 
         for(let i = 0; i < end; i++) {
-            if (racer.placements[i] <= requiredPlacement) {
+            if (user.placements[i] <= requiredPlacement) {
                 currStreak += 1
             }
             else {
@@ -274,8 +274,8 @@ router.post('/update-streak', async (req, res) => {
             highestStreak = currStreak
         }
 
-        racer.streak = highestStreak
-        await racer.save()
+        user.streak = highestStreak
+        await user.save()
         
         res.status(200).json({ message: 'Updated streak successfully'})
     } catch (error) {
@@ -284,24 +284,24 @@ router.post('/update-streak', async (req, res) => {
     }
 })
 
-// Update Racer Number of Podium Finishes
+// Update user Number of Podium Finishes
 router.post('/update-podium-count', async (req, res) => {
     try {
         const { id } = req.body
-        const racer = await User.findById(id)
+        const user = await User.findById(id)
         const requiredPlacement = 4
 
         let podiumCount = 0
-        let end = racer.placements.length
+        let end = user.placements.length
 
         for(let i = 0; i < end; i++) {
-            if(racer.placements[i] <= requiredPlacement){
+            if(user.placements[i] <= requiredPlacement){
                 podiumCount++
             }
         }
 
-        racer.podium_count = podiumCount
-        await racer.save()
+        user.podium_count = podiumCount
+        await user.save()
         
         res.status(200).json({ message: 'Updated podium count successfully'})
     } catch (error) {
@@ -310,33 +310,33 @@ router.post('/update-podium-count', async (req, res) => {
     }
 })
 
-//Update Racer Rivals 
+//Update user Rivals 
 router.post('/update-rivals', async (req, res) => {
     try {
         const { id, standing, standings } = req.body
-        const racer = await User.findById(id)
+        const user = await User.findById(id)
         let placementSum = 0
 
-        // Calc racer overall avg placement
-        racer.placements.forEach(placement => {
+        // Calc user overall avg placement
+        user.placements.forEach(placement => {
             placementSum += placement
         })
 
-        const avgPlacement = (placementSum / racer.placements?.length).toFixed(2)
+        const avgPlacement = (placementSum / user.placements?.length).toFixed(2)
 
-        // If standing is greater that means racer placed outside of avg, ex racer was upset
+        // If standing is greater that means user placed outside of avg, ex user was upset
         if(standing > avgPlacement){
-            // Save every racer that outplaced the current racers
+            // Save every user that outplaced the current users
             const rivalsArr = standings.slice(0, standing - 1)
             const rivals = await User.find({ '_id': { $in: rivalsArr } })
 
             rivals.forEach(rival => {
-                racer.rivals.push(rival.username)
+                user.rivals.push(rival.username)
             })
 
             let rivalCount = new Map()
 
-            racer.rivals.forEach(rival => {
+            user.rivals.forEach(rival => {
                 rivalCount.set(rival, (rivalCount.get(rival) || 0) + 1)
             })
 
@@ -348,13 +348,13 @@ router.post('/update-rivals', async (req, res) => {
 
             if(sortedRivals.length >= 3){
                 topRivals = sortedRivals.slice(0, 3).map(([rival, count]) => ({ rival, count }))
-                racer.top_rivals = topRivals
+                user.top_rivals = topRivals
             } else {
                 topRivals = sortedRivals.map(([rival, count]) => ({ rival, count }))
-                racer.top_rivals = topRivals
+                user.top_rivals = topRivals
             }
         }
-        await racer.save()
+        await user.save()
         
         res.status(200).json({ message: 'Updated rivals successfully'})
     } catch (error) {
@@ -363,23 +363,23 @@ router.post('/update-rivals', async (req, res) => {
     }
 })
 
-//Update Racer Tracks
+//Update user Tracks
 router.post('/update-tracks', async (req, res) => {
     try {
         const { id, track, standing } = req.body
 
         if(standing > 3){
-            return res.status(200).json({ message: 'Racer placed out of top 3, no top tracks to be updated'})
+            return res.status(200).json({ message: 'user placed out of top 3, no top tracks to be updated'})
         }
 
-        const racer = await User.findById(id)
-        racer.tracks.push(track)
+        const user = await User.findById(id)
+        user.tracks.push(track)
 
-        //await racer.save()
+        //await user.save()
 
         const trackCount = new Map()
 
-        racer.tracks.forEach(track => {
+        user.tracks.forEach(track => {
             trackCount.set(track, (trackCount.get(track) || 0) + 1)
         })
 
@@ -388,9 +388,9 @@ router.post('/update-tracks', async (req, res) => {
 
         // Step 3: Extract the top N words
         const topTracks = sortedTracks.slice(0, 3).map(([track, count]) => ({ track, count }))
-        racer.top_tracks = topTracks
+        user.top_tracks = topTracks
 
-        await racer.save()
+        await user.save()
         
         res.status(200).json({ message: 'Updated top tracks successfully'})
     } catch (error) {
@@ -399,40 +399,40 @@ router.post('/update-tracks', async (req, res) => {
     }
 })
 
-// Reset all racers 
-router.post('/reset-racers', async (req, res) => {
+// Reset all users 
+router.post('/reset-users', async (req, res) => {
     try{
-        const racers = await User.find({})
-        racers.forEach(async racer => {
-            racer.wins = 0;
-            racer.losses = 0;
-            racer.competitions = 0;
-            racer.score = 0;
-            racer.elo = 1000;
-            racer.placements = [];
-            racer.streak = 0;
-            racer.podium_count = 0;
-            racer.rivals = [];
-            racer.top_rivals = [];
-            racer.tracks = [];
-            racer.top_tracks = [];
-            await racer.save()
+        const users = await User.find({})
+        users.forEach(async user => {
+            user.wins = 0;
+            user.losses = 0;
+            user.competitions = 0;
+            user.score = 0;
+            user.elo = 1000;
+            user.placements = [];
+            user.streak = 0;
+            user.podium_count = 0;
+            user.rivals = [];
+            user.top_rivals = [];
+            user.tracks = [];
+            user.top_tracks = [];
+            await user.save()
         })
-        res.status(200).json({ message: 'Racers reset successfully'})
+        res.status(200).json({ message: 'users reset successfully'})
     } catch(error){
         console.log(error)
-        return res.status(500).json({ message: 'Error reseting racers' })
+        return res.status(500).json({ message: 'Error reseting users' })
     }
 })
 
-// Delete all racers 
-router.post('/delete-racers', async (req, res) => {
+// Delete all users 
+router.post('/delete-users', async (req, res) => {
     try{
         await User.deleteMany({})
-        res.status(200).json({ message: 'Racers deleted successfully'})
+        res.status(200).json({ message: 'users deleted successfully'})
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: 'Error deleting all racers' })
+        res.status(500).json({ message: 'Error deleting all users' })
     }
 })
 

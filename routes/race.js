@@ -20,9 +20,9 @@ router.get('/', async (req, res) => {
         }
 
         const race = await Race.find({}).populate('event', 'name')
-        const racers = await User.find({})
+        const users = await User.find({})
 
-        res.json({ race: race, racers: racers })
+        res.json({ race: race, users: users })
 
     } catch (error) {
         console.log(error)
@@ -44,11 +44,11 @@ router.get('/new', async (req, res) => {
             return res.status(403).json({ message: 'Unauthorized: Admins only' })
         }
 
-        const racers = await User.find({})
+        const users = await User.find({})
         const tracks = await Track.find({})
         const events = await Event.find({})
 
-        res.json({ race: new Race(), racers: racers, tracks: tracks, events: events })
+        res.json({ race: new Race(), users: users, tracks: tracks, events: events })
         
     } catch (error) {
         console.log(error)
@@ -65,10 +65,10 @@ router.post('/', async (req, res) => {
             participants = participants.split(',').map(id => id.trim()); // Trim spaces
         }
 
-        const racers = await User.find({ _id: { $in: participants } })
+        const users = await User.find({ _id: { $in: participants } })
         
-        const sortedRacers = participants.map(id => 
-            racers.find(racer => racer._id.toString() === id.toString())
+        const sortedusers = participants.map(id => 
+            users.find(user => user._id.toString() === id.toString())
         ).filter(Boolean) // Remove undefined values
 
         if (req.body.event === ''){
@@ -81,11 +81,11 @@ router.post('/', async (req, res) => {
             name: req.body.title,
             time: req.body.time,
             track: req.body.track,
-            participants: sortedRacers,
+            participants: sortedusers,
             event: event || null
         })
         
-        // participants are in order of placements so we can update racer scores accordingly here
+        // participants are in order of placements so we can update user scores accordingly here
         await race.save()
         
         return res.status(201).json({

@@ -35,45 +35,45 @@ router.get('/:id', async (req, res) => {
         const event = await Event.findById(id)
         const races = await Race.find({ event: event.id })
 
-        // iterate through races and add racers to eventRacer arr if they arent already existing
-        // this racer instance should be an object that holds score
+        // iterate through races and add users to eventuser arr if they arent already existing
+        // this user instance should be an object that holds score
 
-        let eventRacers = new Map();
+        let eventusers = new Map();
 
         races.forEach(race => {
-            race.participants.forEach((racer, index) => {
-                const racerId = racer._id.toString()
+            race.participants.forEach((user, index) => {
+                const userId = user._id.toString()
 
-                if (!eventRacers.has(racerId)) {
+                if (!eventusers.has(userId)) {
                     const score = race.participants.length - (index + 1)
                     const win = index <= 3 ? 1 : 0
                     const loss = index <= 3 ? 0 : 1
                     const competitions = 1
                     const placements = [index + 1]
 
-                    eventRacers.set(racerId, { 
-                        racer: racer,
+                    eventusers.set(userId, { 
+                        user: user,
                         stats: { score: score, wins: win, losses: loss, competitions: competitions, placements: placements } 
                     });
                 }
                 else {
-                    let eventRacer = eventRacers.get(racerId)
+                    let eventuser = eventusers.get(userId)
 
-                    // Update score based on racer position
-                    eventRacer.stats.score += race.participants.length - (index + 1)
+                    // Update score based on user position
+                    eventuser.stats.score += race.participants.length - (index + 1)
 
-                    // Update racer wins/losses based on racer position
-                    index <= 3 ? eventRacer.stats.wins++ : eventRacer.stats.losses++
-                    eventRacer.stats.competitions++
-                    eventRacer.stats.placements.push(index + 1)
+                    // Update user wins/losses based on user position
+                    index <= 3 ? eventuser.stats.wins++ : eventuser.stats.losses++
+                    eventuser.stats.competitions++
+                    eventuser.stats.placements.push(index + 1)
 
-                    eventRacers.set(racerId, eventRacer);
+                    eventusers.set(userId, eventuser);
                 }   
             })
         })
 
         // 2. Convert Map to array
-        const participantsArr = Array.from(eventRacers.values());
+        const participantsArr = Array.from(eventusers.values());
         event.participants = participantsArr
 
         await event.save()
