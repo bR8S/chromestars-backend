@@ -1,5 +1,6 @@
 import express, { json } from 'express'
 import mongoose from 'mongoose'
+import { GridFSBucket } from 'mongodb'
 import dotenv from 'dotenv'
 
 import User from './models/User.js'
@@ -26,6 +27,7 @@ app.use('/racer', racerRoutes)
 
 
 const mongoURI = process.env.MONGODB_URI
+let bucket
 
 const startServer = async () => {
     try {
@@ -33,6 +35,9 @@ const startServer = async () => {
             useNewUrlParser: true,
             useUnifiedTopology: true
         })
+        const db = mongoose.connection.db
+        bucket = new GridFSBucket(db, { bucketName: 'uploads' })
+    
         app.listen(5000, () => {
             console.log('Server running on http://localhost:5000')
         })  
@@ -45,3 +50,16 @@ const startServer = async () => {
 }
 
 startServer()
+
+// Retrieve image by filename
+app.get('/file/:filename', async (req, res) => {
+    const { filename } = req.params
+
+    // Access the native files collection
+    const file = await mongoose.connection.db.collection('uploads.files').findOne({ filename })
+    if (!file) return res.status(404).send('File not found')
+
+    res.set('Content-Type', file.contentType)
+    const readStream = bucket.openDownloadStream(file._id)
+    readStream.pipe(res)
+});
