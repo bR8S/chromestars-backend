@@ -8,6 +8,7 @@ import Event from '../models/Event.js'
 // All Races Route
 router.get('/', async (req, res) => {
     try {
+        /*
         if(!req.session.user) {
             return res.status(401).json({ message: 'Please sign in' })
         }
@@ -18,11 +19,13 @@ router.get('/', async (req, res) => {
         if(!user.admin) {
             return res.status(403).json({ message: 'Unauthorized: Admins only' })
         }
+        */
 
-        const race = await Race.find({}).populate('event', 'name')
-        const users = await User.find({})
+        const races = await Race.find({})
+            .populate('event', 'name')
+            .populate('participants', 'username')
 
-        res.json({ race: race, users: users })
+        res.json({ races: races })
 
     } catch (error) {
         console.log(error)

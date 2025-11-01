@@ -7,6 +7,9 @@ import User from '../models/User.js'
 router.get('/', async (req, res) => {
     try {
         const events = await Event.find({})
+            .populate('race', 'title')
+            .populate('participants', 'username')
+            
         res.json({ events: events })
     } catch (error) {
         console.log(error)

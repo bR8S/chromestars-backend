@@ -22,7 +22,7 @@ const raceSchema = new mongoose.Schema({
     participants: [{
         type: mongoose.Schema.Types.ObjectId,
         required: true,
-        ref: 'Racer'
+        ref: 'User'
     }],
 })
 

@@ -38,8 +38,8 @@ const startServer = async () => {
         const db = mongoose.connection.db
         bucket = new GridFSBucket(db, { bucketName: 'uploads' })
     
-        app.listen(5000, () => {
-            console.log('Server running on http://localhost:5000')
+        app.listen(4000, () => {
+            console.log('Server running on http://localhost:4000')
         })  
         console.log('Successfully connected to db.')
 

@@ -9,15 +9,16 @@ const eventSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    race: {
-        type: [mongoose.Schema.Types.ObjectId],
+    race: [{
+        type: mongoose.Schema.Types.ObjectId,
         required: true,
         ref: 'Race'
-    },
-    participants: {
-        type: Array,
-        required: true
-    }
+    }],
+    participants: [{
+        type: mongoose.Schema.Types.ObjectId,
+        required: true,
+        ref: 'User'
+    }],
 })
 
 export default mongoose.model('Event', eventSchema)
