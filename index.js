@@ -2,6 +2,9 @@ import express, { json } from 'express'
 import mongoose from 'mongoose'
 import { GridFSBucket } from 'mongodb'
 import dotenv from 'dotenv'
+import bcrypt from 'bcryptjs'
+import jwt from 'jsonwebtoken'
+import { body, validationResult } from 'express-validator'
 
 import User from './models/User.js'
 
@@ -11,6 +14,7 @@ import eventRoutes from './routes/event.js'
 import trackRoutes from './routes/track.js'
 import indexRoutes from './routes/index.js'
 import racerRoutes from './routes/racer.js'
+import authRoutes from './routes/auth.js'
 
 dotenv.config()
 
@@ -24,6 +28,7 @@ app.use('/race', raceRoutes)
 app.use('/event', eventRoutes)
 app.use('/track', trackRoutes)
 app.use('/racer', racerRoutes)
+app.use('/auth', authRoutes)
 
 
 const mongoURI = process.env.MONGODB_URI
