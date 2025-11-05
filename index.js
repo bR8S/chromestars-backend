@@ -2,6 +2,7 @@ import express, { json } from 'express'
 import mongoose from 'mongoose'
 import { GridFSBucket } from 'mongodb'
 import dotenv from 'dotenv'
+import cors from 'cors'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import { body, validationResult } from 'express-validator'
@@ -19,6 +20,14 @@ import authRoutes from './routes/auth.js'
 dotenv.config()
 
 const app = express()
+
+// Allow requests from your frontend
+app.use(cors({
+    origin: "http://localhost:3000", // <-- change to your frontend URL
+    credentials: true,               // if you need cookies
+}))
+
+app.use(express.urlencoded({ extended: true }))
 app.use(express.json())
 
 // mount the routes we set up

@@ -1,16 +1,14 @@
 import express from 'express'
 const router = express.Router()
 import User from '../models/User.js'
+import { authenticateToken } from '../middleware/authenticateToken.js'
 
-router.get('', async (req, res) => {
+// Fetch current user
+router.get('', authenticateToken, async (req, res) => {
     try {
-        if(!req.session.user){
-            return res.status(401).json({ message: 'Please sign in' })
-        }
-
-        const username = req.session.user.username
-        const users = await User.find({})
-        const user = users.find( user => user.username === username )
+        const user = await User.findById(req.user.id).select(
+            "-password" // exclude password field for safety
+        )
 
         res.json({
             id: user.id,
@@ -21,8 +19,7 @@ router.get('', async (req, res) => {
             first_name: user.first_name, 
             last_name: user.last_name, 
             email: user.email, 
-            bio: user.bio, 
-            password: user.password
+            bio: user.bio
         })
     } catch (error) {
         console.log(error)
@@ -30,53 +27,16 @@ router.get('', async (req, res) => {
     }
 })
 
-// Check if user is logged in
-router.get('/logged-in', async (req, res) => {
+// Fetch logged in user info for account page
+router.get('/me', authenticateToken, async (req, res) => {
     try {
-        let userAuth = false
-
-        if(!req.session.user) {
-            return res.status(401).json({ userAuth: userAuth, message: 'Please sign in' })
-        }
-
-        const username = req.session.user.username
-        const users = await User.find({})
-        const user = users.find( user => user.username === username )
-
-        if(!user) {
-            userAuth = true
-            return res.status(403).json({ userAuth: userAuth, message: 'Unauthorized user' })
-        }
-
-        res.json({ userAuth: userAuth })
+        const user = await User.findById(req.user.id).select(
+            "-password" // exclude password field for safety
+        )
+        res.json({ user: user })
     } catch (error) {
         console.log(error)
-        return res.status(500).json({ message: 'Internal server error' })
-    }
-})
-
-// Check if user has correct perms
-router.get('/admin-perms', async (req, res) => {
-    try {
-        let userAdmin = false
-
-        if(!req.session.user) {
-            return res.status(401).json({ userAdmin: userAdmin, message: 'Please sign in' })
-        }
-
-        const username = req.session.user.username
-        const users = await User.find({})
-        const user = users.find( user => user.username === username )
-
-        if(!user) {
-            userAdmin = true
-            return res.status(403).json({ userAdmin: userAdmin, message: 'Unauthorized user' })
-        }
-
-        res.json({ userAdmin: userAdmin })
-    } catch (error) {
-        console.log(error)
-        return res.status(500).json({ message: 'Error authorizing admin perms' })
+        res.status(500).json({ message: 'Internal server error' })
     }
 })
 

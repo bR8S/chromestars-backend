@@ -1,10 +1,9 @@
-const express = require("express")
-const bcrypt = require("bcryptjs")
-const jwt = require("jsonwebtoken")
-const User = require("../models/User")
-const { body, validationResult } = require("express-validator")
-
+import express from 'express'
 const router = express.Router()
+import bcrypt from 'bcryptjs'
+import jwt from 'jsonwebtoken'
+import User from '../models/User.js'
+import { body, validationResult } from 'express-validator'
 
 // POST /auth/register
 router.post("/register", async (req, res) => {
@@ -17,7 +16,7 @@ router.post("/register", async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10)
 
-    const user = new User({
+    const user = new User({ 
       username,
       first_name,
       last_name,
@@ -68,9 +67,9 @@ router.post("/login", async (req, res) => {
 
     res.json({ user: { id: user._id, username: user.username, email }, token })
   } catch (error) {
-    console.error(error);
+    console.error(error)
     res.status(500).json({ message: "Server error" })
   }
 })
 
-module.exports = router;
+export default router;
