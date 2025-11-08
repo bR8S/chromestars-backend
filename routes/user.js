@@ -40,6 +40,31 @@ router.get('/me', authenticateToken, async (req, res) => {
     }
 })
 
+router.post('/update-me', authenticateToken, async (req, res) => {
+    try {
+        const { username, first_name, last_name, email, bio, background_image, profile_image } = req.body
+        const updates = { username, first_name, last_name, email, bio, background_image, profile_image }
+        const user = await User.findById(req.user.id)
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' })
+        }
+        
+        for (const key in updates) {
+            if (updates[key] !== undefined) {
+                user[key] = updates[key]
+            }
+        }
+
+        await user.save()
+        return res.status(200).json({ message: 'User updated successfully' })
+    }
+    catch (error) {
+        console.log(error)
+        return res.status(500).json({ message: 'Error updating user account' })
+    }
+})
+
 router.post('/update-account', async (req, res) => { 
     try {
         const { id, ...updates } = req.body

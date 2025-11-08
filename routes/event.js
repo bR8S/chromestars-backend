@@ -3,6 +3,7 @@ const router = express.Router()
 import Event from '../models/Event.js'
 import Race from '../models/Race.js'
 import User from '../models/User.js'
+import { authenticateToken, requireAdmin } from '../middleware/authenticateToken.js'
 
 router.get('/', async (req, res) => {
     try {
@@ -87,7 +88,7 @@ router.get('/:id', async (req, res) => {
     }
 })
 
-router.post('/', async (req, res) => {
+router.post('/', requireAdmin, async (req, res) => {
     try {
         const event = new Event({
             name: req.body.title,

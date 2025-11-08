@@ -2,8 +2,9 @@ import express from 'express'
 const router = express.Router()
 import Track from '../models/Track.js'
 import User from '../models/User.js'
+import { authenticateToken, requireAdmin } from '../middleware/authenticateToken.js'
 
-// All Races Route
+// All Tracks Route
 router.get('/', async (req, res) => {
     try {
         if(!req.session.user) {
@@ -26,8 +27,8 @@ router.get('/', async (req, res) => {
     }
 })
 
-// Create Race Route
-router.post('/', async (req, res) => {
+// Create Track Route
+router.post('/', requireAdmin, async (req, res) => {
     try {
         const { title, laps } = req.body
         const track = new Track({
@@ -42,7 +43,7 @@ router.post('/', async (req, res) => {
     }
 })
 
-// Fetch All Races 
+// Fetch All Tracks Route
 router.get('/all-tracks', async (req, res) => {
     try {
         const tracks = await Track.find({})
@@ -53,8 +54,8 @@ router.get('/all-tracks', async (req, res) => {
     }
 })
 
-// All Races Route
-router.post('/delete-track', async (req, res) => {
+// Delete Track Route
+router.post('/delete-track', requireAdmin, async (req, res) => {
     try {
         const { id } = req.body
         await Track.deleteOne({ _id: id })

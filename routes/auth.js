@@ -41,7 +41,7 @@ router.post("/register", async (req, res) => {
     await user.save()
 
     // Optionally, return a JWT immediately
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "1d" })
+    const token = jwt.sign({ id: user._id, admin: user.admin }, process.env.JWT_SECRET, { expiresIn: "1d" })
 
     res.status(201).json({ user: { id: user._id, username, email }, token })
   } catch (error) {
@@ -63,9 +63,9 @@ router.post("/login", async (req, res) => {
     if (!isMatch)
       return res.status(400).json({ message: "Invalid credentials" })
 
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "1d" })
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "7d" })
 
-    res.json({ user: { id: user._id, username: user.username, email }, token })
+    res.json({ user: { id: user._id, username: user.username, email, admin: user.admin }, token })
   } catch (error) {
     console.error(error)
     res.status(500).json({ message: "Server error" })

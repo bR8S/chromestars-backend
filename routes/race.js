@@ -4,6 +4,7 @@ import Race from '../models/Race.js'
 import User from '../models/User.js'
 import Track from '../models/Track.js'
 import Event from '../models/Event.js'
+import { authenticateToken, requireAdmin } from '../middleware/authenticateToken.js'
 
 // All Races Route
 router.get('/', async (req, res) => {
@@ -34,7 +35,7 @@ router.get('/', async (req, res) => {
 })
 
 // New Race Route
-router.get('/new', async (req, res) => {
+router.get('/new', requireAdmin, async (req, res) => {
     try {
         if(!req.session.user) {
             return res.status(401).json({ message: 'Please sign in' })
@@ -60,7 +61,7 @@ router.get('/new', async (req, res) => {
 })
 
 // Create Race Route
-router.post('/', async (req, res) => {
+router.post('/', requireAdmin, async (req, res) => {
     try {
         let participants = req.body.participants
 
@@ -103,8 +104,8 @@ router.post('/', async (req, res) => {
 })
 
 
-// All Races Route
-router.post('/api/delete-race', async (req, res) => {
+// Delete race route
+router.post('/api/delete-race', requireAdmin, async (req, res) => {
     try {
         await Race.deleteOne({ _id: req.body.id })
         return res.status(201).json({ message: 'Race deleted successfully' })

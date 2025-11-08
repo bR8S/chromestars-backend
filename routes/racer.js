@@ -2,7 +2,7 @@ import express from 'express'
 const router = express.Router()
 import User from '../models/User.js'
 
-// Given users Route
+// Fetch Racer by Username Route
 router.get('/:username', async (req, res) => {
     try {
         const { username } = req.params

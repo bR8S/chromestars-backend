@@ -11,3 +11,10 @@ export function authenticateToken(req, res, next) {
     next()
   });
 }
+
+export function requireAdmin(req, res, next) {
+  if (!req.user?.admin) {
+    return res.status(403).json({ message: 'Admin privileges required' })
+  }
+  next()
+};
