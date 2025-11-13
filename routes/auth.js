@@ -8,7 +8,7 @@ import { body, validationResult } from 'express-validator'
 // POST /auth/register
 router.post("/register", async (req, res) => {
   try {
-    const { username, first_name, last_name, email, phone_number, password } = req.body
+    const { username, email, phone_number, password } = req.body
 
     const existingUser = await User.findOne({ email })
     if (existingUser)
@@ -18,13 +18,13 @@ router.post("/register", async (req, res) => {
 
     const user = new User({ 
       username,
-      first_name,
-      last_name,
+      first_name: 'John',
+      last_name: 'Doe',
       phone_number,
       email,
       password: hashedPassword,
-      profile_image: `${req.headers.origin}/file/default-profile.png`,
-      background_image: `${req.headers.origin}/file/default-bg.png`,
+      profile_image: `/file/default-profile.png`,
+      background_image: `/file/default-bg.gif`,
       bio: "placeholder bio",
       wins: 0,
       losses: 0,
@@ -43,7 +43,7 @@ router.post("/register", async (req, res) => {
     // Optionally, return a JWT immediately
     const token = jwt.sign({ id: user._id, admin: user.admin }, process.env.JWT_SECRET, { expiresIn: "1d" })
 
-    res.status(201).json({ user: { id: user._id, username, email }, token })
+    res.status(201).json({ user: { id: user._id, username, email, admin: user.admin }, token })
   } catch (error) {
     console.error(error)
     res.status(500).json({ message: "Server error" })
